@@ -1,0 +1,35 @@
+from keras.models import Sequential
+from keras.layers import Dense
+from sklearn.model_selection import StratifiedKFold
+import numpy
+# fix random seed for reproducibility
+seed = 7
+sa=[]
+ha=[]
+sl=[]
+hl=[]
+numpy.random.seed(seed)
+
+# define 10-fold cross validation test harness
+kfold = StratifiedKFold(n_splits=10, shuffle=True, random_state=seed)
+cvscores = []
+for train, test in kfold.split(inputd, output):
+  # create model
+  model = Sequential()
+  model.add(LSTM(256,return_sequences=True))
+  model.add(Dropout(0.5))
+  model.add(LSTM(128,return_sequences=True))
+  model.add(Dropout(0.5))
+  model.add(LSTM(100,return_sequences=True))
+  # model.add(Dropout(0.5))
+  # model.add(LSTM(50,return_sequences=True))
+  # model.add(Dropout(0.5))
+  model.add(Dense(4, activation='softmax'))
+	# Compile model
+  print("hello")
+  op = Adam(learning_rate=0.005)
+  model.compile(loss='sparse_categorical_crossentropy', optimizer=op, metrics=['accuracy'])
+  history=model.fit(inputdd[train],outputdd[train], epochs=1000, batch_size=256,verbose=1,validation_data=(inputdd[test],outputdd[test]))
+  print("after compile")
+  # hist=model.fit(inputdd[train], outputdd[train], epochs=100, batch_size=64, verbose=2)
+  print("after fit")

@@ -1,0 +1,37 @@
+import numpy as np
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import StratifiedShuffleSplit
+from keras.models import Sequential
+from keras.layers import Dense, Activation, Flatten, Convolution1D, Dropout, MaxPooling1D,GlobalAveragePooling1D
+from keras.optimizers import SGD
+from keras.utils import np_utils
+import keras
+
+
+# Create the network
+model = Sequential()
+model.add(Convolution1D(40, 10, strides=2, padding='same', activation='relu',  input_shape=(178, 1)))
+model.add(Dropout(0.2))
+model.add(MaxPooling1D(3))
+model.add(Convolution1D(40, 5, strides=2, padding='same', activation='relu'))
+model.add(Dropout(0.2))
+model.add(MaxPooling1D(3))
+model.add(Convolution1D(40, 4, strides=1, padding='same', activation='relu'))
+model.add(Dropout(0.2))
+model.add(MaxPooling1D(3))
+model.add(GlobalAveragePooling1D())
+model.add(Dense(50, activation='relu'))
+model.add(Dropout(0.2))
+model.add(Dense(2, activation='softmax'))
+
+X_train_tf = np.expand_dims(X_train_tf, axis=2)
+X_valid_tf = np.expand_dims(X_valid_tf, axis=2)
+
+y_train = keras.utils.to_categorical(y_train , num_classes=2)
+y_valid = keras.utils.to_categorical(y_valid , num_classes=2)
+
+model.compile(loss='categorical_crossentropy',optimizer='adam',metrics=['accuracy'])
+nb_epoch = 15
+data_train=model.fit(X_train_tf, y_train, nb_epoch=nb_epoch, validation_data=(X_valid_tf, y_valid), batch_size=16)

@@ -1,0 +1,28 @@
+from keras.layers import Dense, Dropout, LSTM, Embedding
+from keras.preprocessing.sequence import pad_sequences
+from keras.models import Sequential
+import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
+# define contrived series
+import numpy as np
+import tensorflow as tf
+from keras.optimizers import RMSprop
+from keras.optimizers import Adam
+from sklearn import preprocessing
+from sklearn.model_selection import train_test_split
+
+model = Sequential()
+model.add(LSTM(256,return_sequences=True))
+model.add(Dropout(0.2))
+model.add(LSTM(128,return_sequences=True))
+model.add(Dropout(0.2))
+model.add(LSTM(64,return_sequences=True))
+model.add(Dropout(0.2))
+model.add(LSTM(32,return_sequences=True))
+model.add(Dropout(0.2))
+model.add(Dense(4, activation='softmax'))
+# op = RMSprop(learning_rate=0.00001)
+# op = Adam(learning_rate=0.0005)
+model.compile(loss='sparse_categorical_crossentropy', optimizer='RMSprop',metrics=['accuracy'])
+history=model.fit(train_inputs_tf, train_output_tf, epochs=1000, batch_size=256,verbose=1,validation_data=(test_inputs_tf, test_output_tf))
+model.summary()

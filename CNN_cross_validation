@@ -1,0 +1,79 @@
+import numpy as np
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import StratifiedShuffleSplit
+from keras.models import Sequential
+from keras.layers import Dense, Activation, Flatten, Convolution1D, Dropout, MaxPooling1D,GlobalAveragePooling1D
+from keras.optimizers import SGD
+from keras.utils import np_utils
+from sklearn.model_selection import KFold
+import keras
+num_folds=10
+acc_per_fold = []
+loss_per_fold = []
+
+# Merge inputs and targets
+#inputs = np.concatenate((X_train_tf, X_test_tf), axis=0)
+#targets = np.concatenate((y_train, y_test), axis=0)
+
+# Define the K-fold Cross Validator
+kfold = KFold(n_splits=num_folds, shuffle=True)
+X_train_tf = np.expand_dims(X_train_tf, axis=2)
+X_valid_tf = np.expand_dims(X_valid_tf, axis=2)
+
+y_train = keras.utils.to_categorical(y_train , num_classes=2)
+y_valid = keras.utils.to_categorical(y_valid , num_classes=2)
+
+# K-fold Cross Validation model evaluation
+fold_no = 1
+for train, test in kfold.split(X_train_tf, y_train):
+
+  # Define the model architecture
+  model = Sequential()
+  model.add(Convolution1D(64, 10, strides=2, padding='same', activation='relu',  input_shape=(178, 1)))
+  model.add(Dropout(0.2))
+  model.add(MaxPooling1D(3))
+  model.add(Convolution1D(40, 5, strides=2, padding='same', activation='relu'))
+  model.add(Dropout(0.2))
+  model.add(MaxPooling1D(3))
+  model.add(Convolution1D(32, 4, strides=1, padding='same', activation='relu'))
+  model.add(Dropout(0.2))
+  model.add(MaxPooling1D(3))
+  model.add(GlobalAveragePooling1D())
+  model.add(Dense(50, activation='relu'))
+  model.add(Dropout(0.2))
+  model.add(Dense(2, activation='softmax'))
+
+  
+  # Compile the model
+  model.compile(loss='categorical_crossentropy',optimizer='adam',metrics=['accuracy'])
+
+
+  # Generate a print
+  print('------------------------------------------------------------------------')
+  print(f'Training for fold {fold_no} ...')
+
+  # Fit data to model
+  nb_epoch = 15
+  data_train=model.fit(X_train_tf, y_train, nb_epoch=nb_epoch, validation_data=(X_valid_tf, y_valid), batch_size=20)
+
+  # Generate generalization metrics
+  scores = model.evaluate(X_train_tf[test], y_train[test], verbose=0)
+  print(f'Score for fold {fold_no}: {model.metrics_names[0]} of {scores[0]}; {model.metrics_names[1]} of {scores[1]*100}%')
+  acc_per_fold.append(scores[1] * 100)
+  loss_per_fold.append(scores[0])
+
+  # Increase fold number
+  fold_no = fold_no + 1
+
+# == Provide average scores ==
+
+print('Score per fold')
+for i in range(0, len(acc_per_fold)):
+  print('------------------------------------------------------------------------')
+  print(f'> Fold {i+1} - Loss: {loss_per_fold[i]} - Accuracy: {acc_per_fold[i]}%')
+print('------------------------------------------------------------------------')
+print('Average scores for all folds:')
+print(f'> Accuracy: {np.mean(acc_per_fold)} (+- {np.std(acc_per_fold)})')
+print(f'> Loss: {np.mean(loss_per_fold)}')
